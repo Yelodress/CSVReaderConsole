@@ -26,8 +26,10 @@ string courseCanailles = "Les Canailles";
 string courseLutins = "Les Lutins";
 string coursePitchoune = "La Pitchoune";
 string courseBoreale = "La Boréale";
-string clubCG = "ECG";
-string coureurSupprime = "LBDLV";
+string clubCG = "LBDLV";
+//string suppr1 = "SUPPRIM";
+//string suppr2 = "É";
+string coureurSupprime = "SUPPRIMÉ";/* suppr1.append(suppr2)*/
 
 int main()
 {
@@ -130,37 +132,37 @@ int main()
                         }
                         else {
                             //ecris des valeurs incrémentées dans la colonne dossard
-                            if (content[i][numColonneCourse].compare(courseTransmedievale) == 0 /* && content[i][numColonneClub].compare(clubCG) != 0 && content[i][numColonneSupprime].compare(coureurSupprime) != 0*/)
+                            if (content[i][numColonneCourse].compare(courseTransmedievale) == 0 && content[i][numColonneClub].compare(clubCG) != 0 && content[i][numColonneSupprime].compare(coureurSupprime) != 0)
                             {
                                 a++;
                                 newLine << to_string(a);
                             }
-                            else if (content[i][numColonneCourse].compare(coursePitchoune) == 0 /*&& content[i][numColonneClub].compare(clubCG) != 0 && content[i][numColonneSupprime].compare(coureurSupprime) != 0*/)
+                            else if (content[i][numColonneCourse].compare(coursePitchoune) == 0 && content[i][numColonneClub].compare(clubCG) != 0 && content[i][numColonneSupprime].compare(coureurSupprime) != 0)
                             {
                                 b++;
                                 newLine << to_string(1000 + b);
                             }
-                            else if (content[i][numColonneCourse].compare(courseBoreale) == 0 /*&& content[i][numColonneClub].compare(clubCG) != 0 && content[i][numColonneSupprime].compare(coureurSupprime) != 0 */ )
+                            else if (content[i][numColonneCourse].compare(courseBoreale) == 0 && content[i][numColonneClub].compare(clubCG) != 0 && content[i][numColonneSupprime].compare(coureurSupprime) != 0 )
                             {
                                 c++;
                                 newLine << to_string(2000 + c);
                             }
-                            else if (content[i][numColonneCourse].compare(courseCanailles) == 0 /*&& content[i][numColonneClub].compare(clubCG) != 0 && content[i][numColonneSupprime].compare(coureurSupprime) != 0*/)
+                            else if (content[i][numColonneCourse].compare(courseCanailles) == 0 && content[i][numColonneClub].compare(clubCG) != 0 && content[i][numColonneSupprime].compare(coureurSupprime) != 0)
                             {
                                 d++;
                                 newLine << to_string(3000 + d);
                             }
-                            else if (content[i][numColonneCourse].compare(courseLutins) == 0 /*&& content[i][numColonneClub].compare(clubCG) != 0 && content[i][numColonneSupprime].compare(coureurSupprime) != 0*/)
+                            else if (content[i][numColonneCourse].compare(courseLutins) == 0 && content[i][numColonneClub].compare(clubCG) != 0 && content[i][numColonneSupprime].compare(coureurSupprime) != 0)
                             {
                                 e++;
                                 newLine << to_string(4000 + e);
                             }
-                            else if (content[i][numColonneCourse].compare(courseReleve) == 0 /* && content[i][numColonneClub].compare(clubCG) != 0 && content[i][numColonneSupprime].compare(coureurSupprime) != 0*/)
+                            else if (content[i][numColonneCourse].compare(courseReleve) == 0  && content[i][numColonneClub].compare(clubCG) != 0 && content[i][numColonneSupprime].compare(coureurSupprime) != 0)
                             {
                                 f++;
                                 newLine << to_string(5000 + f);
                             }
-                           else if (content[i][numColonneClub].compare(clubCG) == 0 /* && content[i][numColonneSupprime].compare(coureurSupprime) != 0*/)
+                           else if (content[i][numColonneClub].compare(clubCG) == 0  && content[i][numColonneSupprime].compare(coureurSupprime) != 0)
                             {
                                 g++;
                                 newLine << to_string(10000 + g);
