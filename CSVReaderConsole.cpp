@@ -1,8 +1,9 @@
+
 #include <iostream>
 #include <fstream>
 #include <vector>
 #include <sstream>
-#include <Windows.h>
+#include <Windows.h> //Pour le setconsoleoutput
 #include <codecvt>
 
 using namespace std;
@@ -31,6 +32,7 @@ string clubCG = "LBDLV";
 //string suppr2 = "É";
 string coureurSupprime = "SUPPRIMÉ";/* suppr1.append(suppr2)*/
 
+
 int main()
 {
     //Définir la sortie de la console en UTF-8 pour une meilleure compatibilité avec les caractères accentués
@@ -41,23 +43,21 @@ int main()
         cout << "Enter the file name: ";
         cin >> fname;
         cle = true;
-        if (!isUTF8BOM(fname))
+        if (!isUTF8BOM(fname) && isUTF16(fname))
         {
-            if (!isUTF16(fname))
-            {
-            cout << "The file is not in UTF-8 BOM format. Reformatting..." << endl;
+            cout << "Le fichier est en UTF-16. Reformatage en UTF-8..." << endl;
             if (reformatUTF16(fname))
             {
-                cout << "File reformatted successfully." << endl;
+                cout << "Fichier reformaté avec succès." << endl;
                 cle = true;
             }
             else
             {
-                cout << "Error reformatting file." << endl;
+                cout << "Erreur de reformatage." << endl;
                 cle = false;
             }
-            }
-            else {
+        }
+        else if (!isUTF8BOM(fname) && !isUTF16(fname)){
                 cout << "The file is not in UTF-8 BOM format. Reformatting..." << endl;
                 if (reformatUTF8(fname))
                 {
@@ -69,7 +69,7 @@ int main()
                     cout << "Error reformatting file." << endl;
                     cle = false;
                 }
-            }
+            
         }
     } while (cle == false);
     string line, word;
@@ -98,8 +98,8 @@ int main()
             // Initialise un objet stringstream avec la ligne actuelle
              stringstream str(line);
 
-            //Séparer les champs de la ligne en utilisant le caractère ',' comme séparateur
-            while (getline(str, word, ','))
+            //Séparer les champs de la ligne en utilisant le caractère ';' comme séparateur
+            while (getline(str, word, ';'))
             {
                 //Supprimer les "" de chaque mot en utilisant la fonction erase
                 word.erase(remove(word.begin(), word.end(), '\"'), word.end());
@@ -228,7 +228,7 @@ void attributionDossards()
     for (int i = 0; i < content[0].size(); i++)// boucle "tant que la ligne n'est pas finie"
     {
         cout << i;
-        if (content[0][i].compare(nomColonneDossard) == 0)//boucle pour comparer "Si le contenu de la case correspond à la valeur stockée dans la variable test"
+        if (content[0][i].compare(nomColonneDossard) == 0)//boucle pour comparer "Si le contenu de la case correspond à la valeur stockée dans la variable nomColonneDossard"
         {
             numColonneDosssard = i;
         }
@@ -321,31 +321,31 @@ bool reformatUTF8(string filename) {
 
 bool reformatUTF16(string filename) {
     // Open the file in binary mode
-    ifstream file(filename, ios::binary);
-    // Check if the file is open
-    if (!file.is_open())
+    std::ifstream file(filename, std::ios::binary);
+    if (!file.is_open()) {
         return false;
-
-    // Read the content of the file
-    stringstream buffer;
-    buffer << file.rdbuf();
-    file.close();
-
-    // Convert the content to UTF-8 with BOM
-    wstring_convert<codecvt_utf16<wchar_t>, wchar_t> convert;
-    wstring wstr;
-    wstr = convert.from_bytes(buffer.str());
-
-
-    string utf8str = convert.to_bytes(wstr);
-    if (!isUTF8BOM(filename)) {
-        utf8str = "\xEF\xBB\xBF" + utf8str; // Add UTF-8 BOM
     }
 
+    // Read the content of the file
+    std::stringstream buffer;
+    buffer << file.rdbuf();
+    file.close();
+    std::string inputStr = buffer.str();
+
+    // Convert the content to UTF-16
+    std::wstring_convert<std::codecvt_utf16<wchar_t, 0x10ffff, std::little_endian>, wchar_t> convert16;
+    std::wstring utf16str = convert16.from_bytes(inputStr);
+
+    // Convert the content to UTF-8 with BOM
+    std::wstring_convert<std::codecvt_utf8<wchar_t>> convert8;
+    std::string utf8str = convert8.to_bytes(utf16str);
+    utf8str = "\xEF\xBB\xBF" + utf8str; // Add UTF-8 BOM
+
     // Rewrite the file in binary mode
-    ofstream outfile(filename, ios::binary);
-    if (!outfile.is_open())
+    std::ofstream outfile(filename, std::ios::binary);
+    if (!outfile.is_open()) {
         return false;
+    }
 
     outfile.write(utf8str.c_str(), utf8str.length());
     outfile.close();
