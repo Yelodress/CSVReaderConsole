@@ -129,10 +129,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="CSVReaderConsole.cpp" />
-    <ClCompile Include="matchingwords.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="matchingwords.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

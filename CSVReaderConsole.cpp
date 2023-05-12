@@ -31,6 +31,7 @@ string clubCG = "LBDLV";
 //string suppr1 = "SUPPRIM";
 //string suppr2 = "É";
 string coureurSupprime = "SUPPRIMÉ";/* suppr1.append(suppr2)*/
+bool isUtf16Before;
 
 
 int main()
@@ -63,6 +64,7 @@ int main()
                 {
                     cout << "File reformatted successfully." << endl;
                     cle = true;
+
                 }
                 else
                 {
@@ -96,18 +98,37 @@ int main()
             row->clear();
 
             // Initialise un objet stringstream avec la ligne actuelle
-             stringstream str(line);
+              stringstream str(line);
 
-            //Séparer les champs de la ligne en utilisant le caractère ';' comme séparateur
-            while (getline(str, word, ';'))
-            {
-                //Supprimer les "" de chaque mot en utilisant la fonction erase
-                word.erase(remove(word.begin(), word.end(), '\"'), word.end());
-                row->push_back(word);
-            }
-            // Ajoute a ligne actuelle au vecteur 2D
-            content.push_back(*row);
+             if (isUtf16Before == true)
+             {
+                 //Séparer les champs de la ligne en utilisant le caractère ';' comme séparateur
+                 while (getline(str, word, ';'))
+                 {
+                     //Supprimer les "" de chaque mot en utilisant la fonction erase
+                     word.erase(remove(word.begin(), word.end(), '\"'), word.end());
+                     row->push_back(word);
+                     // Ajoute a ligne actuelle au vecteur 2D
+                     content.push_back(*row);
 
+                 }
+             }
+             else if (isUtf16Before == false)
+             {
+                 //Séparer les champs de la ligne en utilisant le caractère ';' comme séparateur
+                 while (getline(str, word, ','))
+                 {
+                     //Supprimer les "" de chaque mot en utilisant la fonction erase
+                     word.erase(remove(word.begin(), word.end(), '\"'), word.end());
+                     row->push_back(word);
+                     // Ajoute a ligne actuelle au vecteur 2D
+                     content.push_back(*row);
+
+                 }
+             }
+            
+
+            
         }
         file.clear(); //Efface l'indicateur d'état "eofbit"
     }
@@ -316,6 +337,8 @@ bool reformatUTF8(string filename) {
     outfile.write(utf8str.c_str(), utf8str.length());
     outfile.close();
 
+    isUtf16Before = false;
+
     return true;
 }
 
@@ -349,6 +372,8 @@ bool reformatUTF16(string filename) {
 
     outfile.write(utf8str.c_str(), utf8str.length());
     outfile.close();
+
+    isUtf16Before = true;
 
     return true;
 }
