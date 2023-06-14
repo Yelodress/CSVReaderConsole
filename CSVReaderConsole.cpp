@@ -1,17 +1,20 @@
-
 #include <iostream>
 #include <fstream>
 #include <vector>
 #include <sstream>
 #include <Windows.h> //Pour le setconsoleoutput
-#include <codecvt>
+#include <codecvt> //Conversion
+#include <random> //Génération aléatoire
+//#include <mysql_driver.h>
+//#include <mysql_connection.h>
 
+//using namespace sql;
 using namespace std;
 
 vector<vector<string>> content;
 vector<streampos> linePosition;
 int texteBrut();
-void attributionDossards();
+void rechercheColonnes();
 bool isUTF8BOM(string filename);
 bool reformatUTF8(string filename);
 bool reformatUTF16(string filename);
@@ -21,6 +24,7 @@ int numColonneDosssard;
 int numColonneCourse;
 int numColonneClub;
 int numColonneSupprime;
+int numColonneTags;
 string courseTransmedievale = "La Transmédiévale"; //Définit la chaine de caractère de la course a rechercher
 string courseReleve = "La Relève";
 string courseCanailles = "Les Canailles";
@@ -28,10 +32,12 @@ string courseLutins = "Les Lutins";
 string coursePitchoune = "La Pitchoune";
 string courseBoreale = "La Boréale";
 string clubCG = "LBDLV";
-//string suppr1 = "SUPPRIM";
-//string suppr2 = "É";
-string coureurSupprime = "SUPPRIMÉ";/* suppr1.append(suppr2)*/
+string coureurSupprime = "SUPPRIMÉ";
 bool isUtf16Before;
+string stockageDossards = "Dossards; TAGs;\n";
+void generationTags();
+string tag;
+
 
 
 int main()
@@ -41,34 +47,34 @@ int main()
 
     string fname;
     do {
-        cout << "Enter the file name: ";
+        cout << "Entrez le nom du fichier: ";
         cin >> fname;
         cle = true;
         if (!isUTF8BOM(fname) && isUTF16(fname))
         {
-            cout << "Le fichier est en UTF-16. Reformatage en UTF-8..." << endl;
+            cout << "Le fichier est en UTF-16. Formatage en UTF-8..." << endl;
             if (reformatUTF16(fname))
             {
-                cout << "Fichier reformaté avec succès." << endl;
+                cout << "Fichier formaté avec succès." << endl;
                 cle = true;
             }
             else
             {
-                cout << "Erreur de reformatage." << endl;
+                cout << "Erreur de formatage." << endl;
                 cle = false;
             }
         }
         else if (!isUTF8BOM(fname) && !isUTF16(fname)){
-                cout << "The file is not in UTF-8 BOM format. Reformatting..." << endl;
+                cout << "le fichier n'est pas en UTF-8 BOM. Formatage ..." << endl;
                 if (reformatUTF8(fname))
                 {
-                    cout << "File reformatted successfully." << endl;
+                    cout << "Fichier formaté avec succès" << endl;
                     cle = true;
 
                 }
                 else
                 {
-                    cout << "Error reformatting file." << endl;
+                    cout << "Erreur de formatage." << endl;
                     cle = false;
                 }
             
@@ -98,46 +104,27 @@ int main()
             row->clear();
 
             // Initialise un objet stringstream avec la ligne actuelle
-              stringstream str(line);
-
-             if (isUtf16Before == true)
-             {
-                 //Séparer les champs de la ligne en utilisant le caractère ';' comme séparateur
-                 while (getline(str, word, ';'))
-                 {
-                     //Supprimer les "" de chaque mot en utilisant la fonction erase
-                     word.erase(remove(word.begin(), word.end(), '\"'), word.end());
-                     row->push_back(word);
-                     // Ajoute a ligne actuelle au vecteur 2D
-                     content.push_back(*row);
-
-                 }
-             }
-             else if (isUtf16Before == false)
-             {
-                 //Séparer les champs de la ligne en utilisant le caractère ';' comme séparateur
-                 while (getline(str, word, ','))
-                 {
-                     //Supprimer les "" de chaque mot en utilisant la fonction erase
-                     word.erase(remove(word.begin(), word.end(), '\"'), word.end());
-                     row->push_back(word);
-                     // Ajoute a ligne actuelle au vecteur 2D
-                     content.push_back(*row);
-
-                 }
-             }
+            stringstream str(line);
+            //Séparer les champs de la ligne en utilisant le caractère ';' comme séparateur
+            while (getline(str, word, ';'))
+            {
+                //Supprimer les "" de chaque mot en utilisant la fonction erase
+                word.erase(remove(word.begin(), word.end(), '\"'), word.end());
+                row->push_back(word);
+            }
+            // Ajoute a ligne actuelle au vecteur 2D
+            content.push_back(*row);
             
-
             
         }
         file.clear(); //Efface l'indicateur d'état "eofbit"
     }
     else
-        cout << "Could not open the file\n";
+        cout << "Erreur dans l'ouverture du fichier\n";
 
-    attributionDossards();
+    rechercheColonnes();
 
-    if (numColonneDosssard != -1) {
+     if (numColonneDosssard != -1) {
         // Créez un fichier temporaire
         string tempFilename = "temp.csv";
         ofstream tempFile(tempFilename, ios::out);
@@ -156,38 +143,58 @@ int main()
                             if (content[i][numColonneCourse].compare(courseTransmedievale) == 0 && content[i][numColonneClub].compare(clubCG) != 0 && content[i][numColonneSupprime].compare(coureurSupprime) != 0)
                             {
                                 a++;
-                                newLine << to_string(a);
+                                string num = to_string(a);
+                                newLine << num;
+                                generationTags();
+                                stockageDossards = stockageDossards + num + ";" + tag + ";\n";
                             }
                             else if (content[i][numColonneCourse].compare(coursePitchoune) == 0 && content[i][numColonneClub].compare(clubCG) != 0 && content[i][numColonneSupprime].compare(coureurSupprime) != 0)
                             {
                                 b++;
-                                newLine << to_string(1000 + b);
+                                string num = to_string(1000 + b);
+                                newLine << num;
+                                generationTags();
+                                stockageDossards = stockageDossards + num + ";" + tag + ";\n";
                             }
                             else if (content[i][numColonneCourse].compare(courseBoreale) == 0 && content[i][numColonneClub].compare(clubCG) != 0 && content[i][numColonneSupprime].compare(coureurSupprime) != 0 )
                             {
                                 c++;
-                                newLine << to_string(2000 + c);
+                                string num = to_string(2000 + c);
+                                newLine << num;
+                                generationTags();
+                                stockageDossards = stockageDossards + num + ";" + tag + ";\n";
                             }
                             else if (content[i][numColonneCourse].compare(courseCanailles) == 0 && content[i][numColonneClub].compare(clubCG) != 0 && content[i][numColonneSupprime].compare(coureurSupprime) != 0)
                             {
                                 d++;
-                                newLine << to_string(3000 + d);
+                                string num = to_string(3000 + d);
+                                newLine << num;
+                                generationTags();
+                                stockageDossards = stockageDossards + num + ";" + tag + ";\n";
                             }
                             else if (content[i][numColonneCourse].compare(courseLutins) == 0 && content[i][numColonneClub].compare(clubCG) != 0 && content[i][numColonneSupprime].compare(coureurSupprime) != 0)
                             {
                                 e++;
-                                newLine << to_string(4000 + e);
+                                string num = to_string(4000 + e);
+                                newLine << num;
+                                generationTags();
+                                stockageDossards = stockageDossards + num + ";" + tag + ";\n";
                             }
                             else if (content[i][numColonneCourse].compare(courseReleve) == 0  && content[i][numColonneClub].compare(clubCG) != 0 && content[i][numColonneSupprime].compare(coureurSupprime) != 0)
                             {
                                 f++;
-                                newLine << to_string(5000 + f);
+                                string num = to_string(5000 + f);
+                                newLine << num;
+                                generationTags();
+                                stockageDossards = stockageDossards + num + ";" + tag + ";\n";
                             }
                            else if (content[i][numColonneClub].compare(clubCG) == 0  && content[i][numColonneSupprime].compare(coureurSupprime) != 0)
                             {
                                 g++;
-                                newLine << to_string(10000 + g);
-                                cout << "10000"<< endl;
+                                string num = to_string(10000 + g);
+                                newLine << num;
+                                generationTags();
+                                stockageDossards = stockageDossards + num + ";" + tag + ";\n";
                             }
                         } 
                     }
@@ -195,7 +202,7 @@ int main()
                         newLine << content[i][j];
                     }
                     if (j < content[i].size() - 1) {
-                        newLine << ',';
+                        newLine << ';'; //séparation entre chaque colonne
                     }
                 }
                 tempFile << newLine.str() << "\n";
@@ -203,7 +210,7 @@ int main()
             tempFile.close();
         }
         else {
-            cout << "Could not create temporary file\n";
+            cout << "Erreur d'ouverture du fichier temporaire\n";
         }
 
         // Fermez le fichier original
@@ -216,6 +223,23 @@ int main()
 
     //texteBrut();
     //[ligne][colonne]
+
+    string nomFichier = "tagsDossards.csv";
+    ofstream fichier(nomFichier);
+    if (fichier.is_open())
+    {
+        //cout << stockageDossards;
+        content.clear();
+        fichier << stockageDossards;
+
+        //rechercheColonnes();
+        fichier.close();
+    }
+    else
+    {
+        cout << "erreur";
+    }
+
     return 0;
 }
 
@@ -234,7 +258,24 @@ int texteBrut() //print le contenu du vecteur
     return 0;
 };
 
-void attributionDossards()
+void generationTags() {
+    // Tous les chiffres et lettres que vous voulez utiliser
+    string characters = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    random_device rd;
+    mt19937 generator(rd());
+    uniform_int_distribution<> distribution(0, characters.size() - 1);
+    tag = "0";
+
+    for (int i = 0; i < 7; i++) {
+        // Générer un index aléatoire dans characters
+        int randomIndex = distribution(generator);
+        // Ajouter le caractère à tag
+        tag += characters[randomIndex];
+    }
+    tag = "05800" + tag;
+}
+
+void rechercheColonnes()
 {
     numColonneDosssard = -1;
     numColonneCourse = -1;
@@ -248,7 +289,6 @@ void attributionDossards()
 
     for (int i = 0; i < content[0].size(); i++)// boucle "tant que la ligne n'est pas finie"
     {
-        cout << i;
         if (content[0][i].compare(nomColonneDossard) == 0)//boucle pour comparer "Si le contenu de la case correspond à la valeur stockée dans la variable nomColonneDossard"
         {
             numColonneDosssard = i;
@@ -270,7 +310,28 @@ void attributionDossards()
        }
 
     }
-    cout << "Colonne dossard:" << numColonneDosssard+1 << " Colonne Course:" << numColonneCourse + 1 << "Colonne Club:" << numColonneClub+1 << "Colonne Supprime:" << numColonneSupprime+1 << endl; //Sortie pour l'utilisateur
+
+    if (numColonneDosssard == -1)
+    {
+        cout << "Colonne des dossards non trouvée. L'orthographe recherchée est: \"" << nomColonneDossard << "\"" << endl;
+    }
+
+    if (numColonneCourse == -1)
+    {
+        cout << "Colonne des courses non trouvée. L'orthographe recherchée est: \"" << nomColonneCourse << "\"" << endl;
+    }
+
+    if (numColonneClub == -1)
+    {
+        cout << "Colonne des clubs non trouvée. L'orthographe recherchée est: \"" << nomColonneClub << "\"" << endl;
+    }
+
+    if (numColonneSupprime)
+    {
+        cout << "Colonne des supprimés non trouvée. L'orthographe recherchée est: \"" << nomColonneSupprime << "\"" << endl;
+    }
+
+    cout << "Colonne dossard: " << numColonneDosssard+1 << "\nColonne Course: " << numColonneCourse + 1 << "\nColonne Club: " << numColonneClub+1 << "\nColonne Supprime: " << numColonneSupprime+1 << endl; //Sortie pour l'utilisateur
 }
 
 
